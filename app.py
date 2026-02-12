@@ -381,18 +381,18 @@ def main():
                     <style>
                         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap');
                         /* Force size and margins */
-                        @page { 
+                        @page {{ 
                             size: auto; 
                             margin: 0mm; 
-                        }
+                        }}
                         
-                        body { 
+                        body {{ 
                             font-family: 'Inter', sans-serif; 
                             margin: 10mm; /* Browser visual margin */
                             padding: 0; 
                             background: #fff; 
                             -webkit-print-color-adjust: exact;
-                        }
+                        }}
                         
                         /* Layout Container matches US Letter Safe Area */
                         .page {{
