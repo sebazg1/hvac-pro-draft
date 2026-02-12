@@ -222,7 +222,11 @@ class HVACRenderer:
         # Throat Radius Annotation
         rt_x = p.radius * np.cos(mid_ang)
         rt_y = p.radius * np.sin(mid_ang)
-        text_r_in = max(10, p.radius - 40)
+        
+        # Move text further in (towards center of curvature) to make arrow longer
+        # Ensure it doesn't go negative or too close to 0
+        text_r_in = p.radius - 60 
+        if text_r_in < 20: text_r_in = 20
         
         ax.annotate(f"R{int(p.radius)}",
                     xy=(rt_x, rt_y), xycoords='data',
