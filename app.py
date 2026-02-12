@@ -380,42 +380,44 @@ def main():
                     <title>{project_name} - Fabrication Sheet</title>
                     <style>
                         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap');
-                        @page {{
-                            size: A4 portrait;
-                            margin: 5mm; /* Minimal browser margins */
-                        }}
+                        /* Force size and margins */
+                        @page { 
+                            size: auto; 
+                            margin: 0mm; 
+                        }
                         
-                        body {{ 
+                        body { 
                             font-family: 'Inter', sans-serif; 
-                            margin: 0; 
+                            margin: 10mm; /* Browser visual margin */
                             padding: 0; 
                             background: #fff; 
                             -webkit-print-color-adjust: exact;
-                        }}
+                        }
                         
-                        /* A4 Paper setup */
+                        /* Layout Container matches US Letter Safe Area */
                         .page {{
-                            width: 200mm; 
-                            height: 280mm; /* Reduced height further to be safe */
+                            width: 190mm; 
+                            height: 250mm; /* Very safe height for Letter/A4 */
                             margin: 0 auto;
                             display: flex;
                             flex-direction: column;
+                            outline: 1px dotted #ccc; /* Visual aid, doesn't print */
                         }}
                         
                         .header {{ 
                             text-align: center; 
                             border-bottom: 2px solid #000; 
-                            margin-bottom: 3mm; 
+                            margin-bottom: 2mm; 
                             padding-bottom: 2mm; 
                             flex-shrink: 0;
                         }}
-                        .header h1 {{ margin: 0; font-size: 16px; text-transform: uppercase; }}
-                        .meta {{ display: flex; justify-content: space-between; font-size: 10px; margin-top: 2px; }}
+                        .header h1 {{ margin: 0; font-size: 14px; text-transform: uppercase; }}
+                        .meta {{ display: flex; justify-content: space-between; font-size: 8px; margin-top: 2px; }}
                         
                         .grid {{
                             display: grid;
                             grid-template-columns: repeat(3, 1fr);
-                            gap: 3mm; /* Reduced gap */
+                            gap: 2mm; /* Tiny gap */
                             flex-grow: 1; 
                         }}
                         
@@ -423,24 +425,25 @@ def main():
                             border: 1px solid #9ca3af;
                             padding: 2px;
                             text-align: center;
-                            height: 80mm; /* Reduced from 88mm to safest value */
+                            height: 70mm; /* Main constraint */
                             display: flex;
                             flex-direction: column;
                             align-items: center;
                             justify-content: center;
                             break-inside: avoid;
                             box-sizing: border-box;
+                            overflow: hidden;
                         }}
                         
                         .card img {{
-                            max-width: 98%;
-                            max-height: 75mm;
+                            max-width: 95%;
+                            max-height: 55mm; /* Leave room for label */
                             object-fit: contain;
                         }}
                         
                         .card-label {{
                             margin-top: 2px;
-                            font-size: 9px;
+                            font-size: 8px;
                             font-weight: bold;
                             color: #000;
                             border-top: 1px solid #e5e7eb;
