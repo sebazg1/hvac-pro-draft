@@ -395,8 +395,8 @@ def main():
                         
                         /* A4 Paper setup */
                         .page {{
-                            width: 200mm; /* A4 width (210) - margins (5*2) */
-                            height: 287mm; /* A4 height (297) - margins (5*2) */
+                            width: 200mm; 
+                            height: 280mm; /* Reduced height further to be safe */
                             margin: 0 auto;
                             display: flex;
                             flex-direction: column;
@@ -405,7 +405,7 @@ def main():
                         .header {{ 
                             text-align: center; 
                             border-bottom: 2px solid #000; 
-                            margin-bottom: 5mm; 
+                            margin-bottom: 3mm; 
                             padding-bottom: 2mm; 
                             flex-shrink: 0;
                         }}
@@ -415,15 +415,15 @@ def main():
                         .grid {{
                             display: grid;
                             grid-template-columns: repeat(3, 1fr);
-                            gap: 4mm;
-                            flex-grow: 1; /* Fill remaining space */
+                            gap: 3mm; /* Reduced gap */
+                            flex-grow: 1; 
                         }}
                         
                         .card {{
                             border: 1px solid #9ca3af;
                             padding: 2px;
                             text-align: center;
-                            height: 88mm; /* Explicit height: (287 - header) / 3 approx */
+                            height: 80mm; /* Reduced from 88mm to safest value */
                             display: flex;
                             flex-direction: column;
                             align-items: center;
