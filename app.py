@@ -144,9 +144,22 @@ class HVACRenderer:
         if p.shift_val > 0:
             shift_color = '#dc2626'
             if p.shift_side == "Left":
+                # Points: (tl[0], tl[1]) -> (tl[0], bl[1]) -> (bl[0], bl[1])
+                # Horizontal segment is (tl[0], bl[0]) at y=bl[1]
                 ax.plot([tl[0], tl[0], bl[0]], [tl[1], bl[1], bl[1]], color=shift_color, ls='--', lw=1.5, marker='o')
+                
+                # Text below horizontal segment
+                mid_x = (tl[0] + bl[0]) / 2
+                ax.text(mid_x, bl[1] - 40, f"{int(p.shift_val)}", ha='center', va='top', color=shift_color, fontsize=10, weight='bold')
+                
             elif p.shift_side == "Right":
+                # Points: (tr[0], tr[1]) -> (tr[0], br[1]) -> (br[0], br[1])
+                # Horizontal segment is (tr[0], br[0]) at y=br[1]
                 ax.plot([tr[0], tr[0], br[0]], [tr[1], br[1], br[1]], color=shift_color, ls='--', lw=1.5, marker='o')
+
+                # Text below horizontal segment
+                mid_x = (tr[0] + br[0]) / 2
+                ax.text(mid_x, br[1] - 40, f"{int(p.shift_val)}", ha='center', va='top', color=shift_color, fontsize=10, weight='bold')
 
         ax.text(xt + p.top_width/2, yt + 100, f"{int(p.top_width)} x {int(p.top_height)}", ha="center", fontsize=12, weight='bold')
         ax.text(xb + p.btm_width/2, yb - 120, f"{int(p.btm_width)} x {int(p.btm_height)}", ha="center", fontsize=12, weight='bold')
