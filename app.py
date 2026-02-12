@@ -219,6 +219,18 @@ class HVACRenderer:
                 f"{int(p.width)}x{int(p.height)}\n{p.angle:.0f}°", 
                 ha='center', va='center', fontsize=11, weight='bold')
 
+        # Throat Radius Annotation
+        rt_x = p.radius * np.cos(mid_ang)
+        rt_y = p.radius * np.sin(mid_ang)
+        text_r_in = max(10, p.radius - 40)
+        
+        ax.annotate(f"R{int(p.radius)}",
+                    xy=(rt_x, rt_y), xycoords='data',
+                    xytext=(text_r_in*np.cos(mid_ang), text_r_in*np.sin(mid_ang)), textcoords='data',
+                    arrowprops=dict(arrowstyle="->", color="#dc2626", lw=1.5),
+                    color="#dc2626", fontsize=10, weight='bold',
+                    ha='center', va='center')
+
         # Connections Labels
         ax.text(p.radius + p.width/2, -60, p.conn_in, ha='center', fontsize=10, color='#64748b')
         
