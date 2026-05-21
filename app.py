@@ -1,8 +1,6 @@
 import streamlit as st
 import matplotlib.pyplot as plt
-import matplotlib.patches as mpatches
-from matplotlib.patches import Polygon, Arc, FancyArrowPatch
-import matplotlib.patheffects as pe
+from matplotlib.patches import Polygon, Arc
 import numpy as np
 import io
 import base64
@@ -23,337 +21,331 @@ st.set_page_config(
 
 st.markdown("""
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap');
 
-/* ── Force light mode always ── */
-html, body, [data-testid="stAppViewContainer"], [data-testid="stApp"] {
-    background-color: #f5f6f8 !important;
+/* ── FORCE LIGHT MODE – override everything ── */
+:root {
+    color-scheme: light only !important;
+}
+html, body,
+[data-testid="stApp"],
+[data-testid="stAppViewContainer"],
+[data-testid="stMain"],
+[data-testid="block-container"],
+section.main,
+.main .block-container {
+    background-color: #f0f2f5 !important;
     color: #0f172a !important;
 }
-[data-testid="stSidebar"] { background: #ffffff !important; }
-
-/* ── Typography ── */
-*, body, p, div, span, label {
-    font-family: 'Inter', sans-serif !important;
-    color: #0f172a;
+/* kill dark mode on every element */
+* {
+    color-scheme: light !important;
 }
 
-/* ── Top padding ── */
+/* ── Layout ── */
 .block-container {
-    padding-top: 1rem !important;
-    padding-bottom: 4rem !important;
-    padding-left: 1rem !important;
-    padding-right: 1rem !important;
-    max-width: 520px !important;
-    margin: 0 auto;
+    padding: 0.75rem 0.85rem 5rem !important;
+    max-width: 500px !important;
+    margin: 0 auto !important;
 }
+#MainMenu, footer, header, [data-testid="stToolbar"],
+[data-testid="stDecoration"] { display: none !important; }
 
-/* ── Hide streamlit chrome ── */
-#MainMenu, footer, header { visibility: hidden; }
-[data-testid="stToolbar"] { display: none; }
-
-/* ── App header bar ── */
-.app-header {
+/* ── App header ── */
+.app-hdr {
     background: #0f172a;
-    color: white;
+    border-radius: 16px;
     padding: 14px 18px;
-    border-radius: 14px;
-    margin-bottom: 16px;
+    margin-bottom: 14px;
     display: flex;
-    align-items: center;
     justify-content: space-between;
+    align-items: center;
 }
-.app-header-title {
-    font-size: 17px;
-    font-weight: 700;
-    color: white;
-    letter-spacing: -0.3px;
-}
-.app-header-sub {
-    font-size: 11px;
-    color: #94a3b8;
-    margin-top: 1px;
-}
-.app-header-badge {
-    background: #1e3a5f;
-    color: #60a5fa;
-    border-radius: 8px;
-    padding: 4px 10px;
-    font-size: 12px;
-    font-weight: 600;
-    font-family: 'JetBrains Mono', monospace !important;
+.app-hdr-title { font-size: 18px; font-weight: 800; color: #fff; letter-spacing: -0.4px; }
+.app-hdr-sub   { font-size: 11px; color: #94a3b8; margin-top: 2px; font-weight: 500; }
+.app-hdr-badge {
+    background: #1e3a5f; color: #60a5fa;
+    border-radius: 10px; padding: 5px 12px;
+    font-size: 13px; font-weight: 700;
+    font-family: 'JetBrains Mono', monospace;
 }
 
 /* ── Tabs ── */
 .stTabs [data-baseweb="tab-list"] {
-    background: #ffffff;
-    border-radius: 12px;
-    padding: 4px;
-    border: 1px solid #e2e8f0;
-    gap: 2px;
-    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+    background: #ffffff !important;
+    border-radius: 14px !important;
+    padding: 4px !important;
+    border: 1.5px solid #e2e8f0 !important;
+    gap: 3px !important;
+    box-shadow: 0 1px 4px rgba(0,0,0,.07) !important;
+    margin-bottom: 14px !important;
 }
 .stTabs [data-baseweb="tab"] {
-    border-radius: 9px !important;
-    font-weight: 600 !important;
+    border-radius: 10px !important;
+    font-weight: 700 !important;
     font-size: 13px !important;
-    padding: 8px 16px !important;
+    padding: 9px 14px !important;
     color: #64748b !important;
     background: transparent !important;
+    border: none !important;
 }
 .stTabs [aria-selected="true"] {
     background: #0f172a !important;
     color: #ffffff !important;
 }
 
-/* ── Section cards ── */
-.section-card {
+/* ── Section headers ── */
+.sec-hdr {
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: #94a3b8;
+    margin: 16px 0 8px;
+    padding-left: 2px;
+}
+
+/* ── White card wrapper ── */
+.card-wrap {
     background: #ffffff;
     border-radius: 14px;
-    border: 1px solid #e8eaed;
-    padding: 16px;
+    border: 1.5px solid #e8eaed;
+    padding: 14px 14px 6px;
     margin-bottom: 12px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-}
-.section-title {
-    font-size: 11px;
-    font-weight: 700;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: #64748b;
-    margin-bottom: 12px;
-    display: flex;
-    align-items: center;
-    gap: 6px;
+    box-shadow: 0 1px 4px rgba(0,0,0,.05);
 }
 
-/* ── Type selector ── */
-.stRadio > div {
-    background: #ffffff;
-    border-radius: 12px;
-    border: 1px solid #e2e8f0;
-    padding: 4px;
-    gap: 4px;
-    box-shadow: 0 1px 4px rgba(0,0,0,0.05);
-}
-.stRadio > div > label {
-    border-radius: 9px !important;
-    padding: 8px 14px !important;
-    font-weight: 600 !important;
-    font-size: 13px !important;
-    flex: 1;
-    text-align: center;
-    cursor: pointer;
-    border: none !important;
-}
-[data-testid="stRadio"] label[data-checked="true"] {
-    background: #0f172a !important;
-    color: white !important;
-}
-
-/* ── Number inputs ── */
-div[data-testid="stNumberInput"] {
-    background: #f8fafc;
-    border-radius: 10px;
-    border: 1.5px solid #e2e8f0;
-    overflow: hidden;
-    transition: border-color 0.15s;
-}
-div[data-testid="stNumberInput"]:focus-within {
-    border-color: #3b82f6;
-    background: #fff;
-}
-div[data-testid="stNumberInput"] input {
+/* ── All inputs – force white background & dark text ── */
+input[type="number"],
+input[type="text"],
+input[type="search"] {
+    background-color: #f8fafc !important;
+    color: #0f172a !important;
+    border: 1.5px solid #dde1e7 !important;
+    border-radius: 10px !important;
     font-family: 'JetBrains Mono', monospace !important;
     font-weight: 600 !important;
     font-size: 15px !important;
-    color: #0f172a !important;
-    background: transparent !important;
-    border: none !important;
+    -webkit-text-fill-color: #0f172a !important;
 }
-div[data-testid="stNumberInput"] label {
+input[type="number"]:focus,
+input[type="text"]:focus {
+    border-color: #2563eb !important;
+    background-color: #ffffff !important;
+    box-shadow: 0 0 0 3px rgba(37,99,235,0.12) !important;
+    outline: none !important;
+}
+/* Number input wrapper */
+div[data-testid="stNumberInput"] > div {
+    background: #f8fafc !important;
+    border: 1.5px solid #dde1e7 !important;
+    border-radius: 10px !important;
+    overflow: hidden;
+}
+div[data-testid="stNumberInput"] > div:focus-within {
+    border-color: #2563eb !important;
+    background: #fff !important;
+}
+/* Labels above inputs */
+div[data-testid="stNumberInput"] label,
+div[data-testid="stSelectbox"] label,
+div[data-testid="stSlider"] label,
+div[data-testid="stCheckbox"] label,
+div[data-testid="stTextInput"] label {
     font-size: 12px !important;
-    font-weight: 600 !important;
+    font-weight: 700 !important;
     color: #475569 !important;
-    margin-bottom: 4px !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.04em !important;
+    margin-bottom: 3px !important;
+}
+/* +/- buttons */
+div[data-testid="stNumberInput"] button {
+    background: #f1f5f9 !important;
+    color: #334155 !important;
+    border: none !important;
+    font-weight: 700 !important;
 }
 
 /* ── Selectbox ── */
 div[data-testid="stSelectbox"] > div > div {
     background: #f8fafc !important;
-    border: 1.5px solid #e2e8f0 !important;
+    border: 1.5px solid #dde1e7 !important;
     border-radius: 10px !important;
-    font-weight: 600 !important;
-    font-size: 13px !important;
     color: #0f172a !important;
-}
-div[data-testid="stSelectbox"] label {
-    font-size: 12px !important;
     font-weight: 600 !important;
-    color: #475569 !important;
+    font-size: 14px !important;
 }
 
 /* ── Slider ── */
-div[data-testid="stSlider"] label {
-    font-size: 12px !important;
-    font-weight: 600 !important;
-    color: #475569 !important;
-}
 div[data-testid="stSlider"] [data-testid="stSliderThumb"] {
     background: #0f172a !important;
 }
+div[data-testid="stSlider"] [data-baseweb="slider"] div[role="slider"] {
+    background: #0f172a !important;
+}
+
+/* ── Radio (type toggle) ── */
+div[data-testid="stRadio"] > div {
+    background: #ffffff !important;
+    border-radius: 12px !important;
+    border: 1.5px solid #e2e8f0 !important;
+    padding: 4px !important;
+    gap: 3px !important;
+    box-shadow: 0 1px 4px rgba(0,0,0,.06) !important;
+    display: flex !important;
+}
+div[data-testid="stRadio"] label {
+    border-radius: 9px !important;
+    padding: 9px 10px !important;
+    flex: 1 !important;
+    text-align: center !important;
+    font-weight: 700 !important;
+    font-size: 13px !important;
+    color: #64748b !important;
+    cursor: pointer !important;
+    transition: all .15s !important;
+}
+div[data-testid="stRadio"] label:has(input:checked) {
+    background: #0f172a !important;
+    color: #fff !important;
+}
+/* hide the actual radio dot */
+div[data-testid="stRadio"] input[type="radio"] { display: none !important; }
 
 /* ── Checkbox ── */
+div[data-testid="stCheckbox"] {
+    background: #f8fafc;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 10px 12px;
+}
 div[data-testid="stCheckbox"] label {
     font-size: 13px !important;
-    font-weight: 500 !important;
+    font-weight: 600 !important;
     color: #0f172a !important;
+    text-transform: none !important;
+    letter-spacing: 0 !important;
 }
 
-/* ── Buttons ── */
-.stButton > button {
-    border-radius: 12px !important;
-    font-weight: 700 !important;
-    font-size: 14px !important;
-    padding: 12px 20px !important;
-    border: 1.5px solid #e2e8f0 !important;
-    background: #ffffff !important;
-    color: #0f172a !important;
-    transition: all 0.15s ease !important;
-    width: 100%;
-}
-.stButton > button:hover {
-    border-color: #0f172a !important;
-    background: #0f172a !important;
-    color: white !important;
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15) !important;
-}
+/* ── Primary button ── */
 .stButton > button[kind="primary"] {
     background: #0f172a !important;
-    color: white !important;
-    border-color: #0f172a !important;
+    color: #ffffff !important;
+    border: none !important;
+    border-radius: 14px !important;
     font-size: 15px !important;
-    padding: 14px 20px !important;
-    box-shadow: 0 4px 14px rgba(15,23,42,0.25) !important;
+    font-weight: 800 !important;
+    padding: 15px !important;
+    width: 100% !important;
+    letter-spacing: -0.2px !important;
+    box-shadow: 0 4px 16px rgba(15,23,42,.3) !important;
+    transition: all .15s !important;
 }
 .stButton > button[kind="primary"]:hover {
     background: #1e293b !important;
-    box-shadow: 0 6px 20px rgba(15,23,42,0.35) !important;
+    box-shadow: 0 6px 24px rgba(15,23,42,.4) !important;
+    transform: translateY(-1px) !important;
+}
+/* Secondary / danger button */
+.stButton > button:not([kind="primary"]) {
+    background: #ffffff !important;
+    color: #0f172a !important;
+    border: 1.5px solid #e2e8f0 !important;
+    border-radius: 12px !important;
+    font-weight: 700 !important;
+    font-size: 13px !important;
+    padding: 10px !important;
+    width: 100% !important;
+}
+.stButton > button:not([kind="primary"]):hover {
+    border-color: #0f172a !important;
+    background: #f8fafc !important;
 }
 
-/* ── Preview container ── */
-.preview-wrap {
+/* ── Preview box ── */
+.preview-box {
     background: #ffffff;
     border-radius: 14px;
-    border: 1px solid #e8eaed;
-    padding: 12px;
-    margin-top: 12px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    border: 1.5px solid #e8eaed;
+    padding: 10px;
+    margin-top: 10px;
+    box-shadow: 0 1px 4px rgba(0,0,0,.05);
 }
-.preview-label {
-    font-size: 11px;
-    font-weight: 700;
-    letter-spacing: 0.08em;
+.preview-lbl {
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.1em;
     text-transform: uppercase;
     color: #94a3b8;
-    margin-bottom: 8px;
     text-align: center;
+    margin-bottom: 6px;
 }
 
-/* ── Sheet item rows ── */
-.item-row {
+/* ── Sheet item card ── */
+.sheet-item {
     background: #ffffff;
     border-radius: 12px;
-    border: 1px solid #e8eaed;
-    padding: 10px 12px;
+    border: 1.5px solid #e8eaed;
     margin-bottom: 8px;
+    overflow: hidden;
+}
+.sheet-item-head {
+    background: #f8fafc;
+    border-bottom: 1px solid #e8eaed;
+    padding: 8px 12px;
     display: flex;
+    justify-content: space-between;
     align-items: center;
-    gap: 12px;
-}
-.item-num {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 12px;
-    font-weight: 700;
-    color: #64748b;
-    min-width: 28px;
-}
-.item-info { flex: 1; }
-.item-type {
-    font-size: 12px;
-    font-weight: 700;
-    color: #0f172a;
-}
-.item-dim {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 11px;
-    color: #64748b;
-    margin-top: 1px;
 }
 
-/* ── Info / warning boxes ── */
+/* ── Info/warning ── */
 div[data-testid="stInfo"] {
     background: #eff6ff !important;
-    border: 1px solid #bfdbfe !important;
-    border-radius: 10px !important;
+    border: 1.5px solid #bfdbfe !important;
+    border-radius: 12px !important;
     color: #1e40af !important;
 }
 div[data-testid="stWarning"] {
     background: #fffbeb !important;
-    border: 1px solid #fcd34d !important;
-    border-radius: 10px !important;
-}
-
-/* ── Expander ── */
-details {
-    background: #f8fafc;
-    border-radius: 10px;
-    border: 1px solid #e2e8f0 !important;
-    padding: 2px 12px !important;
-}
-details summary {
-    font-size: 12px !important;
-    font-weight: 700 !important;
-    color: #64748b !important;
-    letter-spacing: 0.05em;
-    text-transform: uppercase;
-    padding: 10px 0 !important;
+    border: 1.5px solid #fcd34d !important;
+    border-radius: 12px !important;
 }
 
 /* ── Metric ── */
 div[data-testid="stMetric"] {
-    background: #ffffff;
-    border: 1px solid #e8eaed;
-    border-radius: 12px;
-    padding: 12px 14px;
-    text-align: center;
+    background: #ffffff !important;
+    border: 1.5px solid #e8eaed !important;
+    border-radius: 12px !important;
+    padding: 12px !important;
+    text-align: center !important;
 }
 div[data-testid="stMetricValue"] {
     font-family: 'JetBrains Mono', monospace !important;
-    font-size: 22px !important;
-    font-weight: 700 !important;
+    font-size: 20px !important;
+    font-weight: 800 !important;
     color: #0f172a !important;
 }
 div[data-testid="stMetricLabel"] {
-    font-size: 11px !important;
-    font-weight: 600 !important;
-    color: #64748b !important;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
+    font-size: 10px !important;
+    font-weight: 700 !important;
+    color: #94a3b8 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.06em !important;
 }
-
-/* ── Divider ── */
-hr { border-color: #f1f5f9 !important; margin: 8px 0 !important; }
 
 /* ── Text input ── */
-div[data-testid="stTextInput"] input {
+div[data-testid="stTextInput"] > div {
     background: #f8fafc !important;
-    border: 1.5px solid #e2e8f0 !important;
+    border: 1.5px solid #dde1e7 !important;
     border-radius: 10px !important;
-    font-weight: 600 !important;
-    color: #0f172a !important;
 }
+div[data-testid="stTextInput"] > div:focus-within {
+    border-color: #2563eb !important;
+}
+
+/* divider */
+hr { border-color: #f1f5f9 !important; margin: 6px 0 !important; }
 </style>
 """, unsafe_allow_html=True)
 
@@ -363,12 +355,11 @@ div[data-testid="stTextInput"] input {
 # ═══════════════════════════════════════════════════════
 
 class BasePiece(BaseModel):
-    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
-    project: str = "Job-101"
+    id:         str   = Field(default_factory=lambda: str(uuid.uuid4()))
+    project:    str   = "Job-101"
     piece_type: Literal["Straight", "Bend"]
-    qty: int = 1
-    notes: str = ""
-
+    qty:        int   = 1
+    notes:      str   = ""
 
 class StraightPiece(BasePiece):
     piece_type: Literal["Straight"] = "Straight"
@@ -380,24 +371,20 @@ class StraightPiece(BasePiece):
     conn_top:   str   = "TDF"
     conn_btm:   str   = "TDF"
     insulation: int   = 0
-    h_align:    Literal["Center", "Left Flat", "Right Flat"] = "Center"
-    v_align:    Literal["Center", "Flat Top", "Flat Bottom"] = "Center"
-    shift_side: Literal["None", "Left", "Right"] = "None"
+    h_align:    Literal["Center","Left Flat","Right Flat"] = "Center"
+    v_align:    Literal["Center","Flat Top","Flat Bottom"] = "Center"
+    shift_side: Literal["None","Left","Right"] = "None"
     shift_val:  float = Field(default=0.0, ge=0)
 
     @property
-    def label(self) -> str:
-        top = f"{int(self.top_width)}×{int(self.top_height)}"
-        btm = f"{int(self.btm_width)}×{int(self.btm_height)}"
-        if top == btm:
-            return f"{top}  L={int(self.length)}"
-        return f"{top} / {btm}  L={int(self.length)}"
+    def label(self):
+        t = f"{int(self.top_width)}x{int(self.top_height)}"
+        b = f"{int(self.btm_width)}x{int(self.btm_height)}"
+        return f"{t}/{b} L={int(self.length)}" if t != b else f"{t} L={int(self.length)}"
 
     @property
-    def is_transition(self) -> bool:
-        return not (self.top_width == self.btm_width and
-                    self.top_height == self.btm_height)
-
+    def is_transition(self):
+        return not (self.top_width==self.btm_width and self.top_height==self.btm_height)
 
 class BendPiece(BasePiece):
     piece_type: Literal["Bend"] = "Bend"
@@ -410,274 +397,228 @@ class BendPiece(BasePiece):
     vanes:   bool  = False
 
     @property
-    def label(self) -> str:
-        return (f"{int(self.width)}×{int(self.height)}"
-                f"  R{int(self.radius)}  {int(self.angle)}°")
+    def label(self):
+        return f"{int(self.width)}x{int(self.height)} R{int(self.radius)} {int(self.angle)}deg"
 
 
 # ═══════════════════════════════════════════════════════
-# 3. RENDERING ENGINE  (engineering drawing style)
+# 3. RENDERER
 # ═══════════════════════════════════════════════════════
 
-# Colour palette – technical drawing on white
-INK    = "#0d1117"   # body lines
-DIM    = "#2563eb"   # dimension lines & text
-ANN    = "#dc2626"   # annotations / radius callout
-HATCH  = "#94a3b8"   # light hatch / vane lines
-CONN   = "#059669"   # connection labels
-
-LW_BODY = 2.2
-LW_DIM  = 1.0
-LW_THIN = 0.7
-
+INK   = "#0d1117"
+DIM   = "#2563eb"
+ANN   = "#dc2626"
+CONN  = "#059669"
+HATCH = "#cbd5e1"
+LW    = 2.0
 
 class HVACRenderer:
 
     @staticmethod
-    def _create_fig(w=5.5, h=7.5):
-        fig = plt.Figure(figsize=(w, h), facecolor="white", dpi=150)
-        ax  = fig.add_axes([0, 0, 1, 1])
+    def _fig(w=5, h=7):
+        fig = plt.Figure(figsize=(w,h), facecolor="white", dpi=150)
+        ax  = fig.add_axes([0.05, 0.05, 0.9, 0.9])
         ax.set_facecolor("white")
         ax.set_aspect("equal")
         ax.axis("off")
         return fig, ax
 
-    # ── dimension line helper ────────────────────────
     @staticmethod
-    def _dim_line(ax, x1, y1, x2, y2, label, offset=80, side="right"):
-        """Draw a dimension line with arrows and label."""
-        dx, dy = x2 - x1, y2 - y1
-        length = np.hypot(dx, dy)
-        if length == 0:
-            return
-        nx, ny = -dy / length, dx / length   # normal
-        if side == "left":
-            nx, ny = -nx, -ny
-        ox, oy = nx * offset, ny * offset
-
+    def _arrow_dim(ax, x1,y1, x2,y2, label, gap=0, perp=80):
+        """
+        Draw a dimension line OUTSIDE the shape.
+        gap   = extra offset perpendicular to the line direction
+        perp  = how far off to place the line
+        """
+        dx, dy = x2-x1, y2-y1
+        L = np.hypot(dx,dy)
+        if L < 1: return
+        # unit normal (perpendicular, pointing outward)
+        nx, ny = -dy/L, dx/L
+        off = perp + gap
+        ox, oy = nx*off, ny*off
         # extension lines
-        ax.plot([x1, x1 + ox], [y1, y1 + oy], color=DIM, lw=LW_THIN, zorder=3)
-        ax.plot([x2, x2 + ox], [y2, y2 + oy], color=DIM, lw=LW_THIN, zorder=3)
-        # main line with arrows
-        ax.annotate("", xy=(x2 + ox, y2 + oy), xytext=(x1 + ox, y1 + oy),
-                    arrowprops=dict(arrowstyle="<->", color=DIM, lw=LW_DIM),
-                    zorder=4)
+        for px,py in [(x1,y1),(x2,y2)]:
+            ax.plot([px, px+ox],[py, py+oy],
+                    color=DIM, lw=0.7, zorder=3)
+        # dimension line with arrows
+        ax.annotate("", xy=(x2+ox, y2+oy), xytext=(x1+ox, y1+oy),
+                    arrowprops=dict(arrowstyle="<->", color=DIM, lw=1.0), zorder=4)
         # label
-        mx, my = (x1 + x2) / 2 + ox * 1.4, (y1 + y2) / 2 + oy * 1.4
-        angle  = np.degrees(np.arctan2(dy, dx))
-        if abs(angle) > 90:
-            angle += 180
+        mx = (x1+x2)/2 + ox*1.0
+        my = (y1+y2)/2 + oy*1.0
+        ang = np.degrees(np.arctan2(dy,dx))
+        if abs(ang) > 90: ang += 180
         ax.text(mx, my, label, ha="center", va="center",
-                fontsize=8.5, color=DIM, weight="bold",
-                rotation=angle, rotation_mode="anchor", zorder=5)
+                fontsize=8, color=DIM, weight="bold",
+                rotation=ang, rotation_mode="anchor", zorder=5)
 
-    # ── STRAIGHT / TRANSITION ───────────────────────
+    # ── STRAIGHT ────────────────────────────────────
     @staticmethod
     def render_straight(p: StraightPiece):
-        fig, ax = HVACRenderer._create_fig()
+        fig, ax = HVACRenderer._fig(w=5, h=7.5)
 
-        # geometry
         sv = p.shift_val if p.shift_side != "None" else 0.0
         max_w = max(p.top_width, p.btm_width) + sv
         xt = xb = 0.0
-
         if p.shift_side == "Left":
             xt, xb = 0.0, sv
         elif p.shift_side == "Right":
             xt, xb = sv, 0.0
         else:
-            if p.h_align == "Left Flat":
-                xt = xb = 0.0
+            if p.h_align == "Left Flat":   xt=xb=0.0
             elif p.h_align == "Right Flat":
                 xt = max_w - p.top_width
                 xb = max_w - p.btm_width
             else:
-                xt = (max_w - p.top_width)  / 2
-                xb = (max_w - p.btm_width) / 2
+                xt = (max_w-p.top_width)/2
+                xb = (max_w-p.btm_width)/2
 
         yt, yb = p.length, 0.0
-        tl = (xt,               yt)
-        tr = (xt + p.top_width, yt)
-        bl = (xb,               yb)
-        br = (xb + p.btm_width, yb)
+        tl=(xt, yt); tr=(xt+p.top_width, yt)
+        bl=(xb, yb); br=(xb+p.btm_width, yb)
 
-        # ── body ──
-        body = Polygon([bl, br, tr, tl], closed=True,
-                       fill=False, linewidth=LW_BODY, edgecolor=INK, zorder=2)
+        # body
+        body = Polygon([bl,br,tr,tl], closed=True,
+                       fill=False, lw=LW, edgecolor=INK, zorder=2)
         ax.add_patch(body)
 
-        # ── light interior hatch for transition ──
+        # transition hatch
         if p.is_transition:
-            for frac in np.linspace(0.2, 0.8, 5):
-                hx1 = bl[0] + (tl[0] - bl[0]) * frac
-                hx2 = br[0] + (tr[0] - br[0]) * frac
-                hy  = yb + (yt - yb) * frac
-                ax.plot([hx1, hx2], [hy, hy],
-                        color=HATCH, lw=0.4, alpha=0.5, zorder=1)
+            for f in np.linspace(0.15,0.85,6):
+                hx1 = bl[0]+(tl[0]-bl[0])*f
+                hx2 = br[0]+(tr[0]-br[0])*f
+                hy  = yb+(yt-yb)*f
+                ax.plot([hx1,hx2],[hy,hy], color=HATCH, lw=0.5, alpha=0.6, zorder=1)
 
-        # ── width dimension lines (top & btm) ──
-        gap = p.length * 0.08
-        HVACRenderer._dim_line(ax, tl[0], yt + gap, tr[0], yt + gap,
-                               f"{int(p.top_width)}", offset=0, side="right")
-        HVACRenderer._dim_line(ax, bl[0], yb - gap, br[0], yb - gap,
-                               f"{int(p.btm_width)}", offset=0, side="left")
+        # --- dimension lines (placed OUTSIDE the body) ---
+        pad = max_w * 0.12   # perpendicular distance from edge
 
-        # ── length dimension line (right side) ──
-        right_x = max(tr[0], br[0])
-        HVACRenderer._dim_line(ax, right_x, yb, right_x, yt,
-                               f"L = {int(p.length)}", offset=max_w * 0.18)
+        # top width arrow (above top face)
+        HVACRenderer._arrow_dim(ax, tl[0],yt, tr[0],yt,
+                                f"{int(p.top_width)}", perp=pad)
 
-        # ── size labels (bold, inside) ──
-        cx_top = xt + p.top_width  / 2
-        cx_btm = xb + p.btm_width / 2
-        ax.text(cx_top, yt - p.length * 0.06,
-                f"{int(p.top_width)} × {int(p.top_height)}",
-                ha="center", va="top",
-                fontsize=10, weight="bold", color=INK, zorder=5)
-        ax.text(cx_btm, yb + p.length * 0.06,
-                f"{int(p.btm_width)} × {int(p.btm_height)}",
-                ha="center", va="bottom",
-                fontsize=10, weight="bold", color=INK, zorder=5)
+        # btm width arrow (below bottom face)
+        # normal points DOWN so negate perp
+        dx = br[0]-bl[0]; dy = 0
+        L  = abs(dx)
+        # place below: use negative normal (pointing down)
+        off = pad
+        ax.plot([bl[0], bl[0]], [yb, yb-off], color=DIM, lw=0.7, zorder=3)
+        ax.plot([br[0], br[0]], [yb, yb-off], color=DIM, lw=0.7, zorder=3)
+        ax.annotate("", xy=(br[0], yb-off), xytext=(bl[0], yb-off),
+                    arrowprops=dict(arrowstyle="<->", color=DIM, lw=1.0), zorder=4)
+        ax.text((bl[0]+br[0])/2, yb-off*1.8,
+                f"{int(p.btm_width)}", ha="center", va="top",
+                fontsize=8, color=DIM, weight="bold", zorder=5)
 
-        # ── connection labels ──
-        left_x = min(tl[0], bl[0])
+        # length arrow (right of body)
+        right_x = max(tr[0],br[0])
+        HVACRenderer._arrow_dim(ax, right_x,yb, right_x,yt,
+                                f"L={int(p.length)}", perp=pad*1.5)
+
+        # size labels inside
+        ax.text(xt+p.top_width/2, yt-p.length*0.05,
+                f"{int(p.top_width)} x {int(p.top_height)}",
+                ha="center", va="top", fontsize=9.5, weight="bold", color=INK)
+        ax.text(xb+p.btm_width/2, yb+p.length*0.05,
+                f"{int(p.btm_width)} x {int(p.btm_height)}",
+                ha="center", va="bottom", fontsize=9.5, weight="bold", color=INK)
+
+        # connection labels (left side)
+        lx = min(tl[0],bl[0]) - max_w*0.05
         if p.conn_top != "None":
-            ax.text(left_x - max_w * 0.05, yt,
-                    p.conn_top, ha="right", va="center",
-                    fontsize=8.5, color=CONN, weight="bold",
-                    style="italic", zorder=5)
+            ax.text(lx, yt, p.conn_top, ha="right", va="center",
+                    fontsize=8, color=CONN, weight="bold", style="italic")
         if p.conn_btm != "None":
-            ax.text(left_x - max_w * 0.05, yb,
-                    p.conn_btm, ha="right", va="center",
-                    fontsize=8.5, color=CONN, weight="bold",
-                    style="italic", zorder=5)
+            ax.text(lx, yb, p.conn_btm, ha="right", va="center",
+                    fontsize=8, color=CONN, weight="bold", style="italic")
 
-        # ── kick / shift annotation ──
+        # shift annotation
         if sv > 0 and p.shift_side != "None":
+            cy = yb + p.length*0.15
             if p.shift_side == "Left":
-                ax.annotate("", xy=(bl[0], yb + p.length * 0.04),
-                            xytext=(tl[0], yb + p.length * 0.04),
-                            arrowprops=dict(arrowstyle="<->", color=ANN, lw=1.3))
-                ax.plot([tl[0], tl[0]], [yt, yb + p.length * 0.04],
-                        color=ANN, lw=0.8, ls="--")
-                mx = (tl[0] + bl[0]) / 2
-                ax.text(mx, yb + p.length * 0.09,
-                        f"⟵ {int(sv)} mm", ha="center",
-                        fontsize=8, color=ANN, weight="bold")
+                ax.annotate("", xy=(bl[0],cy), xytext=(tl[0],cy),
+                            arrowprops=dict(arrowstyle="<->", color=ANN, lw=1.2))
+                ax.text((tl[0]+bl[0])/2, cy+p.length*0.04,
+                        f"{int(sv)} mm", ha="center", fontsize=8,
+                        color=ANN, weight="bold")
             else:
-                ax.annotate("", xy=(br[0], yb + p.length * 0.04),
-                            xytext=(tr[0], yb + p.length * 0.04),
-                            arrowprops=dict(arrowstyle="<->", color=ANN, lw=1.3))
-                ax.plot([tr[0], tr[0]], [yt, yb + p.length * 0.04],
-                        color=ANN, lw=0.8, ls="--")
-                mx = (tr[0] + br[0]) / 2
-                ax.text(mx, yb + p.length * 0.09,
-                        f"{int(sv)} mm ⟶", ha="center",
-                        fontsize=8, color=ANN, weight="bold")
+                ax.annotate("", xy=(br[0],cy), xytext=(tr[0],cy),
+                            arrowprops=dict(arrowstyle="<->", color=ANN, lw=1.2))
+                ax.text((tr[0]+br[0])/2, cy+p.length*0.04,
+                        f"{int(sv)} mm", ha="center", fontsize=8,
+                        color=ANN, weight="bold")
 
-        # ── watermark tags ──
-        tags = []
-        if p.v_align == "Flat Top":    tags.append("FOT")
-        if p.v_align == "Flat Bottom": tags.append("FOB")
-        if p.insulation > 0:           tags.append(f"{p.insulation}mm INS")
-        if p.is_transition:            tags.append("TRANSITION")
+        # watermark
+        tags=[]
+        if p.v_align=="Flat Top":    tags.append("FOT")
+        if p.v_align=="Flat Bottom": tags.append("FOB")
+        if p.insulation>0:           tags.append(f"{p.insulation}mm INS")
+        if p.is_transition:          tags.append("TRANSITION")
         if tags:
-            cx = (tl[0] + tr[0] + bl[0] + br[0]) / 4
-            ax.text(cx, p.length * 0.5, "\n".join(tags),
-                    ha="center", va="center",
-                    fontsize=11, weight="black", alpha=0.07,
-                    color=INK, zorder=1)
+            cx=(tl[0]+tr[0]+bl[0]+br[0])/4
+            ax.text(cx, p.length*0.5, "\n".join(tags),
+                    ha="center",va="center", fontsize=10,
+                    weight="black", alpha=0.06, color=INK)
 
-        ax.autoscale_view()
-        ax.margins(0.25)
+        ax.autoscale_view(); ax.margins(0.28)
         return fig
 
-    # ── ELBOW / BEND ────────────────────────────────
+    # ── BEND ────────────────────────────────────────
     @staticmethod
     def render_bend(p: BendPiece):
-        fig, ax = HVACRenderer._create_fig(w=6, h=6)
-
+        fig, ax = HVACRenderer._fig(w=6, h=6)
         r_in  = p.radius
         r_out = p.radius + p.width
-        center = (0.0, 0.0)
-        rad    = np.radians(p.angle)
+        rad   = np.radians(p.angle)
 
-        # ── body arcs ──
-        arc_in  = Arc(center, 2*r_in,  2*r_in,
-                      angle=0, theta1=0, theta2=p.angle,
-                      color=INK, lw=LW_BODY, zorder=2)
-        arc_out = Arc(center, 2*r_out, 2*r_out,
-                      angle=0, theta1=0, theta2=p.angle,
-                      color=INK, lw=LW_BODY, zorder=2)
-        ax.add_patch(arc_in)
-        ax.add_patch(arc_out)
+        arc_in  = Arc((0,0), 2*r_in,  2*r_in,  angle=0,theta1=0,theta2=p.angle,color=INK,lw=LW)
+        arc_out = Arc((0,0), 2*r_out, 2*r_out, angle=0,theta1=0,theta2=p.angle,color=INK,lw=LW)
+        ax.add_patch(arc_in); ax.add_patch(arc_out)
 
-        # ── end caps ──
-        ax.plot([r_in, r_out], [0, 0],
-                color=INK, lw=LW_BODY, zorder=2)
-        ax.plot([r_in  * np.cos(rad), r_out * np.cos(rad)],
-                [r_in  * np.sin(rad), r_out * np.sin(rad)],
-                color=INK, lw=LW_BODY, zorder=2)
+        ax.plot([r_in,r_out],[0,0], color=INK, lw=LW)
+        ax.plot([r_in*np.cos(rad),r_out*np.cos(rad)],
+                [r_in*np.sin(rad),r_out*np.sin(rad)], color=INK, lw=LW)
 
-        # ── turning vanes ──
         if p.vanes:
-            n = 3
-            for i in range(1, n + 1):
-                rv = r_in + p.width * (i / (n + 1))
-                vane = Arc(center, 2*rv, 2*rv,
-                           angle=0, theta1=0, theta2=p.angle,
-                           color=HATCH, lw=0.9, ls=(0, (4, 3)), zorder=1)
-                ax.add_patch(vane)
-            # label
-            mid_ang = np.radians(p.angle / 2)
-            rv_mid  = r_in + p.width * 0.5
-            ax.text(rv_mid * np.cos(mid_ang) * 0.6,
-                    rv_mid * np.sin(mid_ang) * 0.6,
-                    "TV", ha="center", va="center",
-                    fontsize=7, color=HATCH, weight="bold", alpha=0.7)
+            n=3
+            for i in range(1,n+1):
+                rv = r_in + p.width*(i/(n+1))
+                ax.add_patch(Arc((0,0),2*rv,2*rv,angle=0,theta1=0,theta2=p.angle,
+                                 color=HATCH,lw=0.9,ls=(0,(4,3))))
+        # radius callout
+        mid = np.radians(p.angle/2)
+        rx=r_in*np.cos(mid); ry=r_in*np.sin(mid)
+        tr_=max(r_in*0.38,18)
+        ax.annotate(f"R{int(r_in)}", xy=(rx,ry),
+                    xytext=(tr_*np.cos(mid),tr_*np.sin(mid)),
+                    arrowprops=dict(arrowstyle="->",color=ANN,lw=1.3,shrinkB=3),
+                    fontsize=9, color=ANN, weight="bold", ha="center", va="center")
 
-        # ── throat radius callout ──
-        mid_ang  = np.radians(p.angle / 2)
-        rt_x = r_in * np.cos(mid_ang)
-        rt_y = r_in * np.sin(mid_ang)
-        txt_r = max(r_in * 0.4, 20)
-        ax.annotate(f"R{int(r_in)}",
-                    xy=(rt_x, rt_y),
-                    xytext=(txt_r * np.cos(mid_ang), txt_r * np.sin(mid_ang)),
-                    arrowprops=dict(arrowstyle="->", color=ANN,
-                                   lw=1.3, shrinkA=2, shrinkB=3),
-                    fontsize=9, color=ANN, weight="bold",
-                    ha="center", va="center", zorder=5)
+        # size + angle label
+        lr = r_out + max(p.width*0.38,65)
+        ax.text(lr*np.cos(mid), lr*np.sin(mid),
+                f"{int(p.width)} x {int(p.height)}\n{p.angle:.0f}°",
+                ha="center",va="center",fontsize=10,weight="bold",color=INK)
 
-        # ── size label ──
-        text_r = r_out + max(p.width * 0.4, 70)
-        ax.text(text_r * np.cos(mid_ang), text_r * np.sin(mid_ang),
-                f"{int(p.width)} × {int(p.height)}\n{p.angle:.0f}°",
-                ha="center", va="center",
-                fontsize=10, weight="bold", color=INK, zorder=5)
+        # dim arc (dashed, outside)
+        da_r = r_out + max(p.width*0.12,35)
+        ax.add_patch(Arc((0,0),2*da_r,2*da_r,angle=0,theta1=0,theta2=p.angle,
+                         color=DIM,lw=0.9,ls="--"))
 
-        # ── angle dimension arc ──
-        arc_dim_r = r_out + max(p.width * 0.15, 40)
-        arc_ang   = Arc(center, 2*arc_dim_r, 2*arc_dim_r,
-                        angle=0, theta1=0, theta2=p.angle,
-                        color=DIM, lw=LW_DIM, ls="--", zorder=3)
-        ax.add_patch(arc_ang)
+        # connection labels
+        rm = r_in+p.width/2
+        off = max(p.width*0.2,42)
+        ax.text(rm,-off, p.conn_in, ha="center",va="top",
+                fontsize=8,color=CONN,weight="bold",style="italic")
+        ex=rm*np.cos(rad); ey=rm*np.sin(rad)
+        ax.text(ex-np.sin(rad)*off, ey+np.cos(rad)*off,
+                p.conn_out, ha="center",va="center",
+                fontsize=8,color=CONN,weight="bold",style="italic",
+                rotation=p.angle-90)
 
-        # ── connection labels ──
-        r_mid = r_in + p.width / 2
-        ax.text(r_mid, -max(p.width * 0.22, 45),
-                p.conn_in, ha="center", va="top",
-                fontsize=8.5, color=CONN, weight="bold", style="italic")
-        ex = r_mid * np.cos(rad)
-        ey = r_mid * np.sin(rad)
-        off = max(p.width * 0.22, 45)
-        ax.text(ex - np.sin(rad) * off, ey + np.cos(rad) * off,
-                p.conn_out, ha="center", va="center",
-                fontsize=8.5, color=CONN, weight="bold",
-                style="italic", rotation=p.angle - 90)
-
-        ax.autoscale_view()
-        ax.margins(0.25)
+        ax.autoscale_view(); ax.margins(0.28)
         return fig
 
 
@@ -687,260 +628,122 @@ class HVACRenderer:
 
 def fig_to_png(fig) -> bytes:
     buf = io.BytesIO()
-    fig.savefig(buf, format="png", bbox_inches="tight",
-                dpi=160, facecolor="white")
-    buf.seek(0)
-    data = buf.getvalue()
-    plt.close(fig)
+    fig.savefig(buf, format="png", bbox_inches="tight", dpi=160, facecolor="white")
+    buf.seek(0); data=buf.getvalue(); plt.close(fig)
     return data
 
+def ins_map():
+    return {"None":0,"13 mm":13,"25 mm":25,"50 mm":50}
 
-def insulation_map() -> dict:
-    return {"None": 0, "13 mm": 13, "25 mm": 25, "50 mm": 50}
-
-
-def _build_print_html(project: str, items: list,
-                       start_num: int, prepared_by: str) -> str:
+def build_print_html(project, items, start_num, prepared_by):
     today = date.today().strftime("%d %b %Y")
-    total = len(items)
-
-    cards_html = ""
-    for i, item in enumerate(items):
-        num     = start_num + i
-        img_b64 = base64.b64encode(item["image"]).decode()
-        qty_str = f"QTY: {item.get('qty', 1)}"
-        notes   = item.get("notes", "").strip()
-        conn    = item.get("connections", "")
-        ins     = item.get("insulation_label", "")
-        extras  = "  |  ".join(filter(None, [conn, ins]))
-
-        cards_html += f"""
+    n     = len(items)
+    cards = ""
+    for i,item in enumerate(items):
+        num   = start_num+i
+        b64   = base64.b64encode(item["image"]).decode()
+        qty   = item.get("qty",1)
+        notes = item.get("notes","").strip()
+        conn  = item.get("connections","")
+        ins   = item.get("ins_label","")
+        extras= " · ".join(filter(None,[conn,ins]))
+        cards += f"""
         <div class="card">
-          <div class="card-head">
-            <span class="card-num">#{num}</span>
-            <span class="card-type">{item['type']}</span>
-            <span class="card-qty">{qty_str}</span>
+          <div class="card-top">
+            <span class="cnum">#{num}</span>
+            <span class="ctype">{item['type'].upper()}</span>
+            <span class="cqty">QTY {qty}</span>
           </div>
-          <div class="card-img-wrap">
-            <img src="data:image/png;base64,{img_b64}" alt="piece {num}">
-          </div>
-          <div class="card-foot">
-            <div class="card-dim">{item['label']}</div>
-            {f'<div class="card-extras">{extras}</div>' if extras else ''}
-            {f'<div class="card-notes">✎ {notes}</div>' if notes else ''}
+          <div class="cimg"><img src="data:image/png;base64,{b64}"></div>
+          <div class="cfoot">
+            <div class="cdim">{item['label']}</div>
+            {f'<div class="cext">{extras}</div>' if extras else ''}
+            {f'<div class="cnotes">{notes}</div>' if notes else ''}
           </div>
         </div>"""
 
-    return f"""<!DOCTYPE html>
-<html lang="en">
-<head>
+    return f"""<!DOCTYPE html><html lang="en"><head>
 <meta charset="UTF-8">
-<title>{project} — Fabrication Sheet</title>
+<title>{project} – Fabrication Sheet</title>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap');
-  *, *::before, *::after {{ box-sizing: border-box; margin: 0; padding: 0; }}
-  @page {{ size: A4 portrait; margin: 8mm; }}
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap');
+*{{box-sizing:border-box;margin:0;padding:0}}
+@page{{size:A4 portrait;margin:8mm}}
+body{{font-family:'Inter',sans-serif;background:#fff;color:#0f172a;
+      -webkit-print-color-adjust:exact;print-color-adjust:exact}}
 
-  body {{
-    font-family: 'Inter', sans-serif;
-    background: #fff;
-    color: #0f172a;
-    -webkit-print-color-adjust: exact;
-    print-color-adjust: exact;
-  }}
+.hdr{{display:grid;grid-template-columns:1fr auto;align-items:end;
+       border-bottom:3px solid #0f172a;padding-bottom:5px;margin-bottom:7px}}
+.hdr h1{{font-size:15px;font-weight:800;text-transform:uppercase;letter-spacing:-.3px}}
+.hdr .proj{{font-size:10px;color:#64748b;font-weight:600;margin-top:2px}}
+.hdr .meta{{text-align:right;font-size:8px;color:#64748b;line-height:1.8}}
+.hdr .meta strong{{color:#0f172a}}
 
-  /* ── Page header ── */
-  .page-header {{
-    display: grid;
-    grid-template-columns: 1fr auto;
-    align-items: end;
-    border-bottom: 3px solid #0f172a;
-    padding-bottom: 5px;
-    margin-bottom: 8px;
-  }}
-  .ph-left h1 {{
-    font-size: 16px;
-    font-weight: 800;
-    letter-spacing: -0.3px;
-    text-transform: uppercase;
-  }}
-  .ph-left .project {{
-    font-size: 11px;
-    color: #475569;
-    margin-top: 1px;
-    font-weight: 600;
-  }}
-  .ph-right {{
-    text-align: right;
-    font-size: 8.5px;
-    color: #64748b;
-    line-height: 1.7;
-  }}
-  .ph-right strong {{ color: #0f172a; }}
+.sumbar{{display:flex;gap:5px;margin-bottom:7px}}
+.spill{{background:#f1f5f9;border:1px solid #e2e8f0;border-radius:5px;
+         padding:3px 8px;font-size:7.5px;font-weight:700;
+         text-transform:uppercase;letter-spacing:.05em;color:#475569}}
 
-  /* ── Summary bar ── */
-  .summary-bar {{
-    display: flex;
-    gap: 6px;
-    margin-bottom: 8px;
-    font-size: 8px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-    color: #475569;
-  }}
-  .summary-pill {{
-    background: #f1f5f9;
-    border: 1px solid #e2e8f0;
-    border-radius: 5px;
-    padding: 3px 8px;
-  }}
+.grid{{display:grid;grid-template-columns:repeat(3,1fr);gap:5px}}
 
-  /* ── Grid ── */
-  .grid {{
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 5px;
-  }}
+.card{{border:1.5px solid #cbd5e1;border-radius:7px;overflow:hidden;
+        display:flex;flex-direction:column;height:84mm;
+        break-inside:avoid;page-break-inside:avoid}}
 
-  /* ── Card ── */
-  .card {{
-    border: 1.5px solid #cbd5e1;
-    border-radius: 6px;
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
-    height: 85mm;
-    break-inside: avoid;
-    page-break-inside: avoid;
-  }}
+.card-top{{background:#0f172a;display:flex;justify-content:space-between;
+            align-items:center;padding:3px 7px;flex-shrink:0}}
+.cnum{{font-family:'JetBrains Mono',monospace;font-size:8.5px;
+        font-weight:700;color:#94a3b8}}
+.ctype{{font-size:7.5px;font-weight:800;color:#e2e8f0;
+         text-transform:uppercase;letter-spacing:.08em}}
+.cqty{{font-size:8px;font-weight:700;color:#60a5fa;
+        font-family:'JetBrains Mono',monospace}}
 
-  .card-head {{
-    background: #0f172a;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 3px 6px;
-    flex-shrink: 0;
-  }}
-  .card-num {{
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 9px;
-    font-weight: 600;
-    color: #94a3b8;
-  }}
-  .card-type {{
-    font-size: 8px;
-    font-weight: 700;
-    color: #e2e8f0;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-  }}
-  .card-qty {{
-    font-size: 8px;
-    font-weight: 700;
-    color: #60a5fa;
-    font-family: 'JetBrains Mono', monospace;
-  }}
+.cimg{{flex:1;display:flex;align-items:center;justify-content:center;
+        padding:4px;background:#fff;min-height:0;overflow:hidden}}
+.cimg img{{max-width:100%;max-height:100%;object-fit:contain}}
 
-  .card-img-wrap {{
-    flex: 1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 4px;
-    background: #fff;
-    min-height: 0;
-    overflow: hidden;
-  }}
-  .card-img-wrap img {{
-    max-width: 100%;
-    max-height: 100%;
-    object-fit: contain;
-  }}
+.cfoot{{border-top:1px solid #e2e8f0;padding:3px 6px;
+         background:#f8fafc;flex-shrink:0}}
+.cdim{{font-family:'JetBrains Mono',monospace;font-size:7px;
+        font-weight:700;color:#0f172a;white-space:nowrap;
+        overflow:hidden;text-overflow:ellipsis}}
+.cext{{font-size:6.5px;color:#059669;font-weight:700;margin-top:1px;
+        white-space:nowrap;overflow:hidden;text-overflow:ellipsis}}
+.cnotes{{font-size:6.5px;color:#d97706;font-style:italic;margin-top:1px;
+          white-space:nowrap;overflow:hidden;text-overflow:ellipsis}}
 
-  .card-foot {{
-    border-top: 1px solid #e2e8f0;
-    padding: 3px 5px;
-    background: #f8fafc;
-    flex-shrink: 0;
-  }}
-  .card-dim {{
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 7.5px;
-    font-weight: 600;
-    color: #0f172a;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }}
-  .card-extras {{
-    font-size: 7px;
-    color: #059669;
-    font-weight: 600;
-    margin-top: 1px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }}
-  .card-notes {{
-    font-size: 7px;
-    color: #d97706;
-    font-style: italic;
-    margin-top: 1px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }}
+.foot{{margin-top:8px;border-top:1px solid #e2e8f0;padding-top:4px;
+        display:flex;justify-content:space-between;
+        font-size:7px;color:#94a3b8}}
+</style></head><body>
 
-  /* ── Footer ── */
-  .page-footer {{
-    margin-top: 10px;
-    border-top: 1px solid #e2e8f0;
-    padding-top: 4px;
-    display: flex;
-    justify-content: space-between;
-    font-size: 7.5px;
-    color: #94a3b8;
-  }}
-
-  @media print {{
-    .no-print {{ display: none !important; }}
-  }}
-</style>
-</head>
-<body>
-
-<div class="page-header">
-  <div class="ph-left">
+<div class="hdr">
+  <div>
     <h1>Fabrication Sheet</h1>
-    <div class="project">Project: {project}</div>
+    <div class="proj">Project: {project}</div>
   </div>
-  <div class="ph-right">
+  <div class="meta">
     <strong>Date:</strong> {today}<br>
-    <strong>Prepared by:</strong> {prepared_by or '—'}<br>
-    <strong>Items:</strong> #{start_num} – #{start_num + total - 1}
+    <strong>By:</strong> {prepared_by or "—"}<br>
+    <strong>Items:</strong> #{start_num}–#{start_num+n-1}
   </div>
 </div>
 
-<div class="summary-bar">
-  <div class="summary-pill">Total pieces: {total}</div>
-  <div class="summary-pill">Numbers: #{start_num} → #{start_num + total - 1}</div>
+<div class="sumbar">
+  <div class="spill">Total: {n} pieces</div>
+  <div class="spill">Numbers: #{start_num} → #{start_num+n-1}</div>
 </div>
 
-<div class="grid">
-  {cards_html}
-</div>
+<div class="grid">{cards}</div>
 
-<div class="page-footer">
+<div class="foot">
   <span>HVAC Fabricator Pro</span>
   <span>{project} · {today}</span>
-  <span>Page 1</span>
 </div>
 
-<script>window.onload = function(){{ window.print(); }}</script>
-</body>
-</html>"""
+<script>window.onload=function(){{window.print()}}</script>
+</body></html>"""
 
 
 # ═══════════════════════════════════════════════════════
@@ -948,282 +751,211 @@ def _build_print_html(project: str, items: list,
 # ═══════════════════════════════════════════════════════
 
 def main():
-    # session state
-    if "collection" not in st.session_state:
-        st.session_state.collection = []
-    if "start_num" not in st.session_state:
-        st.session_state.start_num = 1
-    if "project" not in st.session_state:
-        st.session_state.project = "Job-101"
-    if "prepared_by" not in st.session_state:
-        st.session_state.prepared_by = ""
+    for k,v in [("collection",[]),("start_num",1),
+                ("project","Job-101"),("prepared_by","")]:
+        if k not in st.session_state:
+            st.session_state[k] = v
 
     total = len(st.session_state.collection)
 
-    # ── App header ────────────────────────────────────
+    # header
     st.markdown(f"""
-    <div class="app-header">
+    <div class="app-hdr">
       <div>
-        <div class="app-header-title">🏗️ HVAC Fabricator</div>
-        <div class="app-header-sub">{st.session_state.project}</div>
+        <div class="app-hdr-title">🏗️ HVAC Fabricator</div>
+        <div class="app-hdr-sub">{st.session_state.project}</div>
       </div>
-      <div class="app-header-badge">{total} pcs</div>
-    </div>
-    """, unsafe_allow_html=True)
+      <div class="app-hdr-badge">{total} pcs</div>
+    </div>""", unsafe_allow_html=True)
 
-    # ── Tabs ──────────────────────────────────────────
-    tab_design, tab_sheet, tab_settings = st.tabs(
-        ["✏️ Design", "🖨️ Print Sheet", "⚙️ Settings"])
+    tab_d, tab_p, tab_s = st.tabs(["✏️ Design", "🖨️ Print Sheet", "⚙️ Settings"])
 
-    # ═══════════════════════════════════════════════
-    # DESIGNER TAB
-    # ═══════════════════════════════════════════════
-    with tab_design:
+    # ═══════════════════════════════
+    # DESIGN TAB
+    # ═══════════════════════════════
+    with tab_d:
+        mode = st.radio("type",
+            ["↔  Straight / Transition", "↩  Elbow / Bend"],
+            horizontal=True, label_visibility="collapsed")
+        is_s = "Straight" in mode
 
-        # type toggle
-        mode = st.radio(
-            "type", ["↔  Straight / Transition", "↩  Elbow / Bend"],
-            horizontal=True, label_visibility="collapsed",
-            key="mode_radio"
-        )
-        is_straight = "Straight" in mode
+        fig=None; piece=None
 
-        fig           = None
-        current_piece = None
+        if is_s:
+            # ── Dimensions ──
+            st.markdown('<div class="sec-hdr">📐 Dimensions</div>', True)
+            c1,c2=st.columns(2)
+            tw=c1.number_input("Top W (mm)", value=450,step=10,min_value=1,key="tw")
+            th=c2.number_input("Top H (mm)", value=250,step=10,min_value=1,key="th")
+            c3,c4=st.columns(2)
+            bw=c3.number_input("Btm W (mm)", value=450,step=10,min_value=1,key="bw")
+            bh=c4.number_input("Btm H (mm)", value=250,step=10,min_value=1,key="bh")
+            L =st.number_input("Length (mm)",value=1400,step=50,min_value=1,key="L")
 
-        # ── STRAIGHT form ────────────────────────────
-        if is_straight:
-            st.markdown('<div class="section-card">'
-                        '<div class="section-title">📐 Dimensions</div>', True)
+            # ── Connections ──
+            st.markdown('<div class="sec-hdr">🔗 Connections</div>', True)
+            opts=["TDF","SLIDE","RAW","None"]
+            c5,c6=st.columns(2)
+            ct=c5.selectbox("Top",opts,key="ct")
+            cb=c6.selectbox("Bottom",opts,key="cb")
 
-            c1, c2 = st.columns(2)
-            tw = c1.number_input("Top W (mm)",  value=450, step=10, min_value=1, key="tw")
-            th = c2.number_input("Top H (mm)",  value=250, step=10, min_value=1, key="th")
-            c3, c4 = st.columns(2)
-            bw = c3.number_input("Btm W (mm)",  value=450, step=10, min_value=1, key="bw")
-            bh = c4.number_input("Btm H (mm)",  value=250, step=10, min_value=1, key="bh")
-            L  = st.number_input("Length (mm)", value=1400, step=50, min_value=1, key="L")
+            # ── Alignment ──
+            st.markdown('<div class="sec-hdr">⚙️ Alignment & Insulation</div>', True)
+            c7,c8=st.columns(2)
+            ah=c7.selectbox("Horizontal",["Center","Left Flat","Right Flat"],key="ah")
+            av=c8.selectbox("Vertical",  ["Center","Flat Top","Flat Bottom"],key="av")
+            im=ins_map()
+            c9,c10=st.columns(2)
+            il=c9.selectbox("Insulation",list(im.keys()),key="ins")
+            iv=im[il]
+            sd=c10.selectbox("Kick",["None","Left","Right"],key="sd")
+            sv=st.number_input("Kick distance (mm)",min_value=0.0,value=0.0,
+                               key="sv",disabled=(sd=="None"))
 
-            st.markdown('</div>', True)
-
-            st.markdown('<div class="section-card">'
-                        '<div class="section-title">🔗 Connections</div>', True)
-            opts = ["TDF", "SLIDE", "RAW", "None"]
-            c5, c6 = st.columns(2)
-            ct = c5.selectbox("Top", opts, key="ct")
-            cb = c6.selectbox("Bottom", opts, key="cb")
-            st.markdown('</div>', True)
-
-            with st.expander("⚙️  OFFSET · ALIGNMENT · INSULATION"):
-                align_h   = st.selectbox("Horizontal", ["Center","Left Flat","Right Flat"], key="ah")
-                align_v   = st.selectbox("Vertical",   ["Center","Flat Top","Flat Bottom"], key="av")
-                ins_map   = insulation_map()
-                ins_label = st.selectbox("Insulation", list(ins_map.keys()), key="ins")
-                ins_val   = ins_map[ins_label]
-                st.markdown("**Kick / Shift**")
-                ca, cb2 = st.columns([1, 2])
-                shift_dir = ca.selectbox("Dir", ["None","Left","Right"], key="sd")
-                shift_val = cb2.number_input("Distance (mm)", min_value=0.0,
-                                             value=0.0, key="sv",
-                                             disabled=(shift_dir == "None"))
-
-            with st.expander("📝  QUANTITY & NOTES"):
-                qty   = st.number_input("Quantity", min_value=1, value=1, step=1, key="qty_s")
-                notes = st.text_input("Notes (optional)", key="notes_s",
-                                      placeholder="e.g. galv sheet, paint red end…")
+            # ── Qty & Notes ──
+            st.markdown('<div class="sec-hdr">📝 Quantity & Notes</div>', True)
+            c11,c12=st.columns([1,2])
+            qty  =c11.number_input("Qty",min_value=1,value=1,step=1,key="qty_s")
+            notes=c12.text_input("Notes",key="ns",placeholder="e.g. paint red end")
 
             try:
-                current_piece = StraightPiece(
+                piece=StraightPiece(
                     project=st.session_state.project,
-                    top_width=tw, top_height=th,
-                    btm_width=bw, btm_height=bh, length=L,
-                    conn_top=ct, conn_btm=cb,
-                    h_align=align_h, v_align=align_v,
-                    insulation=ins_val,
-                    shift_side=shift_dir,
-                    shift_val=shift_val if shift_dir != "None" else 0.0,
-                    qty=qty, notes=notes,
-                )
-                fig = HVACRenderer.render_straight(current_piece)
+                    top_width=tw,top_height=th,btm_width=bw,btm_height=bh,length=L,
+                    conn_top=ct,conn_btm=cb,h_align=ah,v_align=av,
+                    insulation=iv,shift_side=sd,
+                    shift_val=sv if sd!="None" else 0.0,qty=qty,notes=notes)
+                fig=HVACRenderer.render_straight(piece)
+                if piece.is_transition:
+                    st.info("Transition piece detected")
             except Exception as e:
-                st.error(f"⚠️ {e}")
+                st.error(f"Error: {e}")
 
-        # ── BEND form ────────────────────────────────
         else:
-            st.markdown('<div class="section-card">'
-                        '<div class="section-title">📐 Dimensions</div>', True)
-            c1, c2 = st.columns(2)
-            w   = c1.number_input("Width (mm)",  value=450, step=10, min_value=1, key="bw2")
-            h   = c2.number_input("Height (mm)", value=250, step=10, min_value=1, key="bh2")
-            c3, c4 = st.columns(2)
-            rad_v = c3.number_input("Throat R (mm)", value=150, step=10, min_value=1, key="rad")
-            ang   = c4.slider("Angle (°)", 5, 180, 90, step=5, key="ang")
+            # ── Bend Dimensions ──
+            st.markdown('<div class="sec-hdr">📐 Dimensions</div>', True)
+            c1,c2=st.columns(2)
+            w =c1.number_input("Width (mm)", value=450,step=10,min_value=1,key="bw2")
+            h =c2.number_input("Height (mm)",value=250,step=10,min_value=1,key="bh2")
+            c3,c4=st.columns(2)
+            rv=c3.number_input("Throat R (mm)",value=150,step=10,min_value=1,key="rv")
+            an=c4.slider("Angle",5,180,90,step=5,key="ang")
+            if rv<w*0.15: st.warning("Very tight throat radius")
 
-            if rad_v < w * 0.15:
-                st.warning("⚠️ Very tight throat radius.")
-            st.markdown('</div>', True)
+            st.markdown('<div class="sec-hdr">🔗 Connections</div>', True)
+            c5,c6=st.columns(2)
+            ci=c5.selectbox("Inlet", ["TDF","SLIDE","RAW"],key="ci")
+            co=c6.selectbox("Outlet",["TDF","SLIDE","RAW"],key="co")
+            vanes=st.checkbox("Turning Vanes",value=True,key="vn")
 
-            st.markdown('<div class="section-card">'
-                        '<div class="section-title">🔗 Connections</div>', True)
-            opts = ["TDF", "SLIDE", "RAW"]
-            c5, c6 = st.columns(2)
-            conn_in  = c5.selectbox("Inlet",  opts, key="ci")
-            conn_out = c6.selectbox("Outlet", opts, key="co")
-            vanes    = st.checkbox("Turning Vanes", value=True, key="vanes")
-            st.markdown('</div>', True)
-
-            with st.expander("📝  QUANTITY & NOTES"):
-                qty   = st.number_input("Quantity", min_value=1, value=1, step=1, key="qty_b")
-                notes = st.text_input("Notes (optional)", key="notes_b",
-                                      placeholder="e.g. vanes + splitter…")
+            st.markdown('<div class="sec-hdr">📝 Quantity & Notes</div>', True)
+            c7,c8=st.columns([1,2])
+            qty  =c7.number_input("Qty",min_value=1,value=1,step=1,key="qty_b")
+            notes=c8.text_input("Notes",key="nb",placeholder="e.g. vanes + splitter")
 
             try:
-                current_piece = BendPiece(
+                piece=BendPiece(
                     project=st.session_state.project,
-                    width=w, height=h, radius=rad_v, angle=ang,
-                    conn_in=conn_in, conn_out=conn_out,
-                    vanes=vanes, qty=qty, notes=notes,
-                )
-                fig = HVACRenderer.render_bend(current_piece)
+                    width=w,height=h,radius=rv,angle=an,
+                    conn_in=ci,conn_out=co,vanes=vanes,qty=qty,notes=notes)
+                fig=HVACRenderer.render_bend(piece)
             except Exception as e:
-                st.error(f"⚠️ {e}")
+                st.error(f"Error: {e}")
 
-        # ── Live preview ──────────────────────────────
+        # ── Live Preview ──
         if fig is not None:
-            st.markdown('<div class="preview-wrap">'
-                        '<div class="preview-label">Live Preview</div>', True)
+            st.markdown('<div class="preview-box"><div class="preview-lbl">Live Preview</div>',True)
             st.pyplot(fig, use_container_width=True)
-            st.markdown('</div>', True)
+            st.markdown('</div>',True)
 
-        # ── Add button ────────────────────────────────
         st.markdown("")
-        if fig is not None and current_piece is not None:
-            if st.button("➕  Add to Sheet", type="primary",
-                         use_container_width=True):
-                png = fig_to_png(fig)
-
-                # build connection string for print
-                if is_straight:
-                    conn_str = f"{current_piece.conn_top} / {current_piece.conn_btm}"
-                    ins_lbl  = (f"{current_piece.insulation}mm INS"
-                                if current_piece.insulation else "")
-                else:
-                    conn_str = f"{current_piece.conn_in} / {current_piece.conn_out}"
-                    ins_lbl  = ""
-
+        if fig is not None and piece is not None:
+            if st.button("➕  Add to Sheet", type="primary", use_container_width=True):
+                png=fig_to_png(fig)
+                conn_s = (f"{piece.conn_top}/{piece.conn_btm}"
+                          if is_s else f"{piece.conn_in}/{piece.conn_out}")
+                ins_l  = (f"{piece.insulation}mm INS"
+                          if is_s and piece.insulation else "")
                 st.session_state.collection.append({
-                    "id":               current_piece.id,
-                    "label":            current_piece.label,
-                    "image":            png,
-                    "type":             current_piece.piece_type,
-                    "qty":              current_piece.qty,
-                    "notes":            current_piece.notes,
-                    "connections":      conn_str,
-                    "insulation_label": ins_lbl,
+                    "id":piece.id,"label":piece.label,"image":png,
+                    "type":piece.piece_type,"qty":piece.qty,
+                    "notes":piece.notes,"connections":conn_s,"ins_label":ins_l
                 })
-                st.toast(f"✅ Added: {current_piece.label}")
+                st.toast(f"Added: {piece.label}")
                 st.rerun()
 
-    # ═══════════════════════════════════════════════
+    # ═══════════════════════════════
     # PRINT SHEET TAB
-    # ═══════════════════════════════════════════════
-    with tab_sheet:
+    # ═══════════════════════════════
+    with tab_p:
         if not st.session_state.collection:
-            st.info("No pieces yet. Go to **Design** tab and add some.")
+            st.info("No pieces yet — go to Design tab and add some.")
         else:
-            n = len(st.session_state.collection)
-            start = st.session_state.start_num
-
-            # summary metrics
-            c1, c2, c3 = st.columns(3)
-            c1.metric("Pieces", n)
-            c2.metric("First #", f"#{start}")
-            c3.metric("Last #",  f"#{start + n - 1}")
-
+            n=len(st.session_state.collection)
+            s=st.session_state.start_num
+            c1,c2,c3=st.columns(3)
+            c1.metric("Pieces",n)
+            c2.metric("First",f"#{s}")
+            c3.metric("Last", f"#{s+n-1}")
             st.markdown("")
 
-            # item list
-            for idx, item in enumerate(st.session_state.collection):
-                num = start + idx
-                c_img, c_info, c_del = st.columns([1, 4, 1])
-                with c_img:
-                    st.image(item["image"], width=60)
-                with c_info:
-                    icon = "↔️" if item["type"] == "Straight" else "↩️"
-                    st.markdown(
-                        f"**{icon} #{num} — {item['type']}**  "
-                        f"<span style='font-size:11px;color:#64748b;'>"
-                        f"QTY {item.get('qty',1)}</span>",
-                        unsafe_allow_html=True)
+            for idx,item in enumerate(st.session_state.collection):
+                num=s+idx
+                ca,cb,cc=st.columns([1,4,1])
+                with ca: st.image(item["image"],width=55)
+                with cb:
+                    icon="↔️" if item["type"]=="Straight" else "↩️"
+                    st.markdown(f"**{icon} #{num} {item['type']}** · QTY {item.get('qty',1)}")
                     st.caption(item["label"])
-                    if item.get("notes"):
-                        st.caption(f"✎ {item['notes']}")
-                with c_del:
-                    st.markdown("<br>", True)
-                    if st.button("✕", key=f"del_{item['id']}",
-                                 help="Remove"):
-                        st.session_state.collection.pop(idx)
-                        st.rerun()
+                    if item.get("notes"): st.caption(f"✎ {item['notes']}")
+                with cc:
+                    st.markdown("<br>",True)
+                    if st.button("✕",key=f"d_{item['id']}",help="Remove"):
+                        st.session_state.collection.pop(idx); st.rerun()
                 st.divider()
 
-            # export
             if st.button("🖨️  Generate Fabrication Sheet",
-                         type="primary", use_container_width=True):
-                html = _build_print_html(
-                    project=st.session_state.project,
-                    items=st.session_state.collection,
-                    start_num=start,
-                    prepared_by=st.session_state.prepared_by,
-                )
-                st.components.v1.html(html, height=900, scrolling=True)
-                st.caption("Print dialog opens automatically. "
-                           "Use Ctrl+P / Cmd+P if not.")
+                         type="primary",use_container_width=True):
+                html=build_print_html(
+                    st.session_state.project,
+                    st.session_state.collection,
+                    st.session_state.start_num,
+                    st.session_state.prepared_by)
+                st.components.v1.html(html,height=920,scrolling=True)
+                st.caption("Print dialog opens automatically. Use Ctrl+P / Cmd+P if needed.")
 
-    # ═══════════════════════════════════════════════
+    # ═══════════════════════════════
     # SETTINGS TAB
-    # ═══════════════════════════════════════════════
-    with tab_settings:
-        st.markdown("#### Job Settings")
+    # ═══════════════════════════════
+    with tab_s:
+        st.markdown('<div class="sec-hdr">Job Details</div>',True)
+        np_=st.text_input("Project Reference",value=st.session_state.project,key="pi")
+        if np_!=st.session_state.project:
+            st.session_state.project=np_
+        nb_=st.text_input("Prepared By",value=st.session_state.prepared_by,
+                          key="bi",placeholder="Your name or initials")
+        if nb_!=st.session_state.prepared_by:
+            st.session_state.prepared_by=nb_
 
-        new_proj = st.text_input("Project Reference",
-                                 value=st.session_state.project, key="proj_input")
-        if new_proj != st.session_state.project:
-            st.session_state.project = new_proj
+        st.markdown('<div class="sec-hdr">Piece Numbering</div>',True)
+        ns_=st.number_input("Start numbering from",min_value=1,
+                            value=st.session_state.start_num,step=1,key="sni",
+                            help="Set this if continuing from a previous order")
+        if ns_!=st.session_state.start_num:
+            st.session_state.start_num=ns_; st.rerun()
+        if st.session_state.start_num>1:
+            n=len(st.session_state.collection)
+            st.info(f"Pieces numbered #{st.session_state.start_num} → "
+                    f"#{st.session_state.start_num+n-1}")
 
-        new_by = st.text_input("Prepared By",
-                               value=st.session_state.prepared_by, key="by_input",
-                               placeholder="Your name or initials")
-        if new_by != st.session_state.prepared_by:
-            st.session_state.prepared_by = new_by
-
-        st.markdown("#### Piece Numbering")
-        new_start = st.number_input(
-            "Start numbering from",
-            min_value=1, value=st.session_state.start_num, step=1,
-            help="Set this if continuing from a previous order.",
-            key="start_num_input"
-        )
-        if new_start != st.session_state.start_num:
-            st.session_state.start_num = new_start
-            st.rerun()
-
-        if st.session_state.start_num > 1:
-            st.info(f"Pieces will be numbered #{st.session_state.start_num} "
-                    f"→ #{st.session_state.start_num + total - 1}")
-
-        st.markdown("#### Session")
-        total_s = len(st.session_state.collection)
-        s_n = sum(1 for x in st.session_state.collection if x["type"] == "Straight")
-        b_n = total_s - s_n
-        st.caption(f"**{total_s} pieces** in sheet   ·   "
-                   f"{s_n} straight / {b_n} bends")
-
+        st.markdown('<div class="sec-hdr">Session</div>',True)
+        n_=len(st.session_state.collection)
+        s_n=sum(1 for x in st.session_state.collection if x["type"]=="Straight")
+        st.caption(f"{n_} pieces total · {s_n} straight · {n_-s_n} bends")
         st.markdown("")
-        if st.button("🗑️  Clear All Pieces", type="secondary",
-                     use_container_width=True, disabled=(total_s == 0)):
-            st.session_state.collection = []
-            st.rerun()
+        if st.button("🗑️  Clear All Pieces",type="secondary",
+                     use_container_width=True,disabled=(n_==0)):
+            st.session_state.collection=[]; st.rerun()
 
-
-if __name__ == "__main__":
+if __name__=="__main__":
     main()
